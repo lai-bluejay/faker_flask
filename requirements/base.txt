@@ -1,0 +1,14 @@
+flask
+gunicorn==19.7.1
+numpy==1.13
+scipy==0.18.1
+scikit-learn==0.18
+mysql-python
+python-dateutil
+torndb
+dataset
+tqdm
+happybase
+redis
+records
+fasttext
