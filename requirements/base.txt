@@ -6,9 +6,7 @@ scikit-learn==0.18
 mysql-python
 python-dateutil
 torndb
-dataset
 tqdm
-happybase
 redis
-records
+records==0.5.2
 fasttext

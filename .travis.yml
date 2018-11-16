@@ -1,0 +1,16 @@
+language: python
+git:
+  depth: 3
+  quiet: true
+python: 
+  - '2.7'
+  - '3.6'
+matrix:
+  include: 
+    - python: '3.6'
+      env: FAKER_ENV=debug
+    - python: '2.7'
+      env: FAKER_ENV=debug
+
+install:
+  pip install -r requirements/base.txt
