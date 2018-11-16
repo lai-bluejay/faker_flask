@@ -12,7 +12,6 @@ root = os.path.dirname(os.path.abspath(__file__))
 sys.path.append("%s/../.." % root)
 sys.path.append("%s/.." % root)
 sys.path.append(u"{0:s}".format(root))
-print(sys.path)
 from faker.servers.base_server import BaseServer
 from faker.config import server_logger
 from faker.utils.log_utils import log_post_parameter
@@ -40,7 +39,7 @@ class ModelPredictorServer(BaseServer):
     @log_post_parameter(logger=server_logger)
     def predict_string_class(self, **kwargs):
         text = kwargs.get(
-            "text", "python 一个文件运行的时候，会启动一个解析器。这个时候会有一片内存，之后按顺序执行文件")
+            "text", u"python 一个文件运行的时候，会启动一个解析器。这个时候会有一片内存，之后按顺序执行文件")
         ret = self.predictor.prediction(text)
         return ret
 

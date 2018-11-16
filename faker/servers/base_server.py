@@ -3,8 +3,6 @@ import os
 import re
 import abc
 import sys
-reload(sys)
-sys.setdefaultencoding("utf-8")
 import time
 import json
 import base64
