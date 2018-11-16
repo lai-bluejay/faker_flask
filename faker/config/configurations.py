@@ -10,7 +10,7 @@ Email: lai.bluejay@gmail.com
 import ConfigParser
 import os
 
-from faker.utils.log_utils import init_log_from_config, ori_logger
+from faker.utils.log_utils import init_log_from_config, logger as ori_logger
 
 root = os.path.dirname(__file__)
 
