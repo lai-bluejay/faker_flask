@@ -1,4 +1,7 @@
 # faker-flask 框架
+[![Build Status](https://travis-ci.org/lai-bluejay/faker_flask.svg?branch=master)](https://travis-ci.org/lai-bluejay/faker_flask)
+
+
 
 ## 概述
 

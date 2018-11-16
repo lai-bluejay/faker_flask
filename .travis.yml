@@ -1,3 +1,4 @@
+sudo: required
 language: python
 git:
   depth: 3
@@ -13,4 +14,5 @@ matrix:
       env: FAKER_ENV=debug
 
 install:
+  pip install -U cython
   pip install -r requirements/base.txt
