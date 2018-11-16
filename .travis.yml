@@ -14,5 +14,5 @@ matrix:
       env: FAKER_ENV=debug
 
 install:
-  pip install -U cython
-  pip install -r requirements/base.txt
+  - pip install -U cython
+  - pip install -r requirements/base.txt
