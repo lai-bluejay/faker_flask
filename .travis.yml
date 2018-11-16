@@ -16,3 +16,7 @@ matrix:
 install:
   - pip install -U cython
   - pip install -r requirements/base.txt
+
+script:
+  - make start_simple_server
+  - python tests/test_simple_server
