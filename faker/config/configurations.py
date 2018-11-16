@@ -10,8 +10,7 @@ Email: lai.bluejay@gmail.com
 import ConfigParser
 import os
 
-from daixm_common.util.log.log import logger as ori_logger, get_basic_log_settings, LoggerAdapterCustomer
-from daixm_common.util.environment import is_aliyun_docker_server
+from faker.utils.log_utils import init_log_from_config, ori_logger
 
 root = os.path.dirname(__file__)
 
@@ -33,47 +32,6 @@ BASE = "Base"
 LOG_DIR = "log_dir"
 LOG_FILE = "log_file"
 LOG_LEVEL = "log_level"
-
-
-def init_log_from_config(cfg_file, formatter='standard', base=BASE):
-    required_ops = [(base, LOG_DIR), (base, LOG_FILE), (base, LOG_LEVEL)]
-    parser = ConfigParser.ConfigParser()
-    parser.read(cfg_file)
-    for sec, op in required_ops:
-        if not parser.has_option(sec, op):
-            raise Exception("Log load config file failed")
-    log_dir = parser.get(base, LOG_DIR)
-    log_file = parser.get(base, LOG_FILE)
-    # add default hostname suffix for log_file
-    if is_aliyun_docker_server():
-        log_file += '.' + MACHINE_NAME
-    log_level = parser.get(base, LOG_LEVEL)
-    settings = get_basic_log_settings()
-    settings['handlers']['info_handler']['filename'] = log_dir + '/' + log_file + '.info'
-    settings['handlers']['debug_handler']['filename'] = log_dir + '/' + log_file + '.debug'
-    settings['handlers']['warn_handler']['filename'] = log_dir + '/' + log_file + '.warn'
-    settings['handlers']['error_handler']['filename'] = log_dir + '/' + log_file + '.error'
-    if formatter == 'flume':
-        settings['handlers']['info_handler']['formatter'] = formatter
-        settings['handlers']['debug_handler']['formatter'] = formatter
-        settings['handlers']['warn_handler']['formatter'] = formatter
-        settings['handlers']['error_handler']['formatter'] = formatter
-    settings['loggers'][log_file] = copy.deepcopy(settings['loggers']['dxm'])
-    logging.config.dictConfig(settings)
-    extra_dict = {"host": MACHINE_NAME}
-    logger = logging.getLogger(log_file)
-    logger.propagate = False
-    if log_level == 'DEBUG':
-        logger.setLevel(logging.DEBUG)
-    elif log_level == 'INFO':
-        logger.setLevel(logging.INFO)
-    elif log_level == 'WARN':
-        logger.setLevel(logging.WARN)
-    elif log_level == 'ERROR':
-        logger.setLevel(logging.ERROR)
-    else:
-        raise ("unknown log level:[%s]" % log_level)
-    return LoggerAdapterCustomer(logger, extra_dict)
 
 class MyConfig(object):
     def __init__(self, method):
