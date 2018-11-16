@@ -172,4 +172,4 @@ def init_log_from_config(cfg_file, formatter='standard', base=BASE):
     return LoggerAdapterCustomer(logger, extra_dict)
 
 
-logger = init_log_from_config(ROOT_DIR + '/conf/local/log.conf')
+# logger = init_log_from_config(ROOT_DIR + '/conf/local/log.conf')

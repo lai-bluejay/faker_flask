@@ -15,5 +15,4 @@ install:
   - pip install -r requirements/base.txt
 
 script:
-  - make start_simple_server
-  - python tests/test_simple_server
+  - make test_simple_server

@@ -6,3 +6,6 @@ assemble:
 
 start_simple_server:
 	cd faker/servers && gunicorn  -w 2 -b 0.0.0.0:12345  simple_server:app
+
+test_simple_server:
+	python tests/test_simple_server.py

@@ -12,6 +12,7 @@ root = os.path.dirname(os.path.abspath(__file__))
 sys.path.append("%s/../.." % root)
 sys.path.append("%s/.." % root)
 sys.path.append(u"{0:s}".format(root))
+import flask
 from faker.servers.base_server import BaseServer
 from faker.config import server_logger
 from faker.utils.log_utils import log_post_parameter

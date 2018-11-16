@@ -14,7 +14,7 @@ import traceback
 #import ruamel.yaml as yaml
 from flask import Flask, request, g
 from gevent.wsgi import WSGIServer
-from faker.utils.log_utils import init_log_from_config, logger as ori_logger
+from faker.utils.log_utils import init_log_from_config
 
 RET_ERRNO = 'code'
 RET_MSG = 'msg'
@@ -103,12 +103,12 @@ class BaseServer(object):
                 self.logger = self._base_server_logger_handler
             elif self._base_server_logger_file:
                 self.logger = init_log_from_config(self._base_server_logger_file)
-            else:
-                self.logger = ori_logger
+            # else:
+                # self.logger = ori_logger
         except:
             print 'custom logger failed, choose default logger'
             print traceback.print_exc()
-            self.logger = ori_logger
+            # self.logger = ori_logger
 
     def base_server_add_log_list(self):
         log = []

@@ -10,7 +10,7 @@ Email: lai.bluejay@gmail.com
 import ConfigParser
 import os
 
-from faker.utils.log_utils import init_log_from_config, logger as ori_logger
+from faker.utils.log_utils import init_log_from_config
 
 root = os.path.dirname(__file__)
 
@@ -71,8 +71,9 @@ class MyConfig(object):
             os.makedirs(log_dir)
         try:
             logger = init_log_from_config(log_fpath, base=base)
-        except:
-            logger = ori_logger
+        except Exception as e:
+            print(e)
+            logger = None
         return logger
 
 if env.DEBUG:
