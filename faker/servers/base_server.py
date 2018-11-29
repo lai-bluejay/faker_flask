@@ -14,6 +14,7 @@ import traceback
 #import ruamel.yaml as yaml
 from flask import Flask, request, g
 from gevent.wsgi import WSGIServer
+import operator
 from faker.utils.log_utils import init_log_from_config
 
 RET_ERRNO = 'code'
@@ -127,6 +128,20 @@ class BaseServer(object):
 def base_server_init_flask(app=None, log_list=lambda :[], check_params_list=[], base_path='/base/',
                              agent_class=None, logger=None, collect_errormsg_decorator=None):
 
+    def get_route_list():
+        'Display registered routes'
+        route_list = list()
+        rules = []
+        for rule in app.url_map.iter_rules():
+            methods = ','.join(sorted(rule.methods))
+            rules.append((rule.endpoint, methods, str(rule)))
+
+        sort_by_rule = operator.itemgetter(2)
+        for endpoint, methods, rule in sorted(rules, key=sort_by_rule):
+            route = '{:50s} {:25s} {}'.format(endpoint, methods, rule)
+            route_list.append(rule)
+        return route_list
+
     def before_request():
         g.method = request.method
         g.path = request.path
@@ -136,7 +151,8 @@ def base_server_init_flask(app=None, log_list=lambda :[], check_params_list=[], 
         g.at = 0
         g.errno = 0
         g.log = []
-        if g.path <> base_path:
+        route_list = get_route_list()
+        if g.path not in route_list:
             g.errno = 404
             ret_dict = {
                 RET_ERRNO: g.errno,
@@ -145,48 +161,48 @@ def base_server_init_flask(app=None, log_list=lambda :[], check_params_list=[], 
             }
             logger.error('error_msg=%s\trequest_path=%s\tserver_path=%s' %(ERROR_CODE[g.errno], g.path, base_path))
             return json.dumps(ret_dict)
+        if g.method in ["POST"]:
+            g.post_dict = request.get_json(force=True, silent=True)
+            if g.post_dict is False or g.post_dict is None:
+                g.errno = 402
+                ret_dict = {
+                    RET_ERRNO: g.errno,
+                    RET_MSG: ERROR_CODE[g.errno],
+                    RET_DATA: None
+                }
+                logger.error('error_msg=%s\trequest_data=%s' %(ERROR_CODE[g.errno], g.post_dict))
+                return json.dumps(ret_dict)
 
-        g.post_dict = request.get_json(force=True, silent=True)
-        if g.post_dict is False or g.post_dict is None:
-            g.errno = 402
-            ret_dict = {
-                RET_ERRNO: g.errno,
-                RET_MSG: ERROR_CODE[g.errno],
-                RET_DATA: None
-            }
-            logger.error('error_msg=%s\trequest_data=%s' %(ERROR_CODE[g.errno], g.post_dict))
-            return json.dumps(ret_dict)
+            if not (g.post_dict.has_key('remote_function') and
+                    hasattr(agent_class, g.post_dict['remote_function'])):
+                g.errno = 403
+                ret_dict = {
+                    RET_ERRNO: g.errno,
+                    RET_MSG: ERROR_CODE[g.errno],
+                    RET_DATA: None
+                }
+                logger.error('error_msg=%s\trequest_funciton=%s' %(ERROR_CODE[g.errno], g.post_dict.get('remote_function')))
+                return json.dumps(ret_dict)
 
-        if not (g.post_dict.has_key('remote_function') and
-                hasattr(agent_class, g.post_dict['remote_function'])):
-            g.errno = 403
-            ret_dict = {
-                RET_ERRNO: g.errno,
-                RET_MSG: ERROR_CODE[g.errno],
-                RET_DATA: None
-            }
-            logger.error('error_msg=%s\trequest_funciton=%s' %(ERROR_CODE[g.errno], g.post_dict.get('remote_function')))
-            return json.dumps(ret_dict)
+            g.remote_function = g.post_dict['remote_function']
 
-        g.remote_function = g.post_dict['remote_function']
+            def _check_parmas_list():
+                g.args = json.loads(g.post_dict.get('args'))
+                #g.args = yaml.safe_load(g.post_dict.get('args'))
+                for check_ele in check_params_list:
+                    assert g.args.has_key(check_ele)
+                return True
 
-        def _check_parmas_list():
-            g.args = json.loads(g.post_dict.get('args'))
-            #g.args = yaml.safe_load(g.post_dict.get('args'))
-            for check_ele in check_params_list:
-                assert g.args.has_key(check_ele)
-            return True
-
-        ret_status,_ = collect_errormsg_decorator(_check_parmas_list)()
-        if not ret_status:
-            g.errno = 401
-            ret_dict = {
-                RET_ERRNO: g.errno,
-                RET_MSG: ERROR_CODE[g.errno],
-                RET_DATA: None
-            }
-            logger.error('error_msg=%s' %(ERROR_CODE[g.errno]))
-            return json.dumps(ret_dict)
+            ret_status,_ = collect_errormsg_decorator(_check_parmas_list)()
+            if not ret_status:
+                g.errno = 401
+                ret_dict = {
+                    RET_ERRNO: g.errno,
+                    RET_MSG: ERROR_CODE[g.errno],
+                    RET_DATA: None
+                }
+                logger.error('error_msg=%s' %(ERROR_CODE[g.errno]))
+                return json.dumps(ret_dict)
 
     def teardown_request(exc):
         g.end = time.time()
@@ -209,6 +225,9 @@ def base_server_init_flask(app=None, log_list=lambda :[], check_params_list=[], 
                 log.extend(extend_log)
         logger.info('\t'.join(log))
 
+    @app.route("/")
+    def hello_world():
+        return 'Hello, World!'
 
     @app.route(base_path, methods=['POST'])
     def _server_run():
@@ -230,7 +249,6 @@ def base_server_init_flask(app=None, log_list=lambda :[], check_params_list=[], 
     @app.route("/health", methods=['HEAD', 'GET'])
     def _heathy_listen():
         """"用于端口健康监测"""
-        
         ret_dict = {
                 RET_ERRNO: 0,
                 RET_MSG: ERROR_CODE[0],
